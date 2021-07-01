@@ -1,0 +1,16 @@
+{
+  "name": "superclass-voice-demo",
+  "version": "1.0.0",
+  "description": "A simple express application to showcase Twilio's basic Voice functionality.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "twilio",
+    "twilio",
+    "voice"
+  ],
+  "author": "Brianna DelValle",
+  "license": "ISC"
+}
