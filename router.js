@@ -1,9 +1,9 @@
 const Router = require('express').Router;
 const { welcome, pollResponse, leaveMessage } = require('./handler');
+const cors = require('cors');
 
 const router = new Router();
-const digits = [];
-const recordingUrls = [];
+const votes = [];
 
 router.post("/welcome", (req, res) => {
     res.set("Content-Type", "text/xml");
@@ -12,7 +12,16 @@ router.post("/welcome", (req, res) => {
 
 router.post("/pollResponse", (req, res) => {
     const digit = req.body.Digits;
-    digits.push(digit);
+    const callSid = req.body.CallSid;
+    const fromNumber = req.body.From;
+
+    votes.push({
+        vote: digit,
+        callSid,
+        fromNumber,
+        recordingUrl: null
+    })
+
     res.send(pollResponse(digit));
 })
 
@@ -26,15 +35,18 @@ router.post("/leaveMessage", (req, res) => {
 })
 
 router.post("/recordingStatusCallback", (req, res) => {
-    recordingUrls.push(`${req.body.RecordingUrl}.mp3`);
+    console.log(req.body.CallSid);
+    console.log('votes: ', votes)
+    const voteIndex = votes.findIndex(vote => vote.callSid == req.body.CallSid);
+    console.log('voteIndex: ', voteIndex)
+    votes[voteIndex].recordingUrl = `${req.body.RecordingUrl}.mp3`;
     res.end();
 })
 
-router.get("/pollResponses", (req, res) => {
+router.get("/pollResponses", cors(), (req, res) => {
     res.set("Content-Type", "application/json");
     res.send({
-        digits,
-        recordingUrls
+        votes
     })
 })
 

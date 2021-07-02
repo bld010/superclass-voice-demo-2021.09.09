@@ -22,10 +22,9 @@ exports.welcome = () => {
 
 exports.pollResponse = (digit) => {
     const pollChoices = {
-        '5': 'Cats rule. ',
-        '6': 'Dogs are awesome.'
+        '5': 'Cake is superior. ',
+        '6': 'Pie is amazing.'
     }
-    console.log('digit in pollResponse: ', digit)
 
     if (digit) {
         const twiml = new VoiceResponse();
