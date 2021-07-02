@@ -1,5 +1,10 @@
 const Router = require('express').Router;
-const { welcome, pollResponse, leaveMessage } = require('./handler');
+const { 
+    generateWelcomeCallerTwiML, 
+    generateSuccessfulPollResponseTwiML, 
+    generateLeaveMessageTwiML,
+    generateHangupTwiML 
+} = require('./handler');
 const cors = require('cors');
 
 const router = new Router();
@@ -7,30 +12,55 @@ const votes = [];
 
 router.post("/welcome", (req, res) => {
     res.set("Content-Type", "text/xml");
-    res.send(welcome());
+    const welcomeCallerTwiML = generateWelcomeCallerTwiML();
+    console.log("welcomeTwiml: ", welcomeCallerTwiML);
+    res.send(welcomeCallerTwiML);
 })
 
 router.post("/pollResponse", (req, res) => {
+
+    //what info are we getting here?
+    console.log('request body: ', req.body);
+
+    //I want to keep track of the responses
+    // for simplicity's sake, I'll just be saving 
+    // the interesting information in an array
+
+    // the callSid is useful, since we can look up
+    // the call resource in the Twilio Console
+    // and it can help us debug issues and find resources
+    // associated with that call, like a recording
+
     const digit = req.body.Digits;
     const callSid = req.body.CallSid;
     const fromNumber = req.body.From;
 
+    // place the call in my votes array
     votes.push({
         vote: digit,
         callSid,
         fromNumber,
-        recordingUrl: null
+        // recordingUrl: null
     })
 
-    res.send(pollResponse(digit));
+    // we could just end the call there, 
+    // but I want to let a caller know
+    // that their vote was successful.
+    // so I'm going to create a another function
+    // to return some TwiML 
+    // lets call it generateSuccessfulPollResponseTwiML
+    // and import it at the top of this file.
+
+    res.send(generateSuccessfulPollResponseTwiML(digit));
 })
 
 router.post("/leaveMessage", (req, res) => {
     const digit = req.body.Digits;
     if (digit) {
-        res.send(leaveMessage(digit));
+        res.send(generateLeaveMessageTwiML(digit));
     } else {
-        res.end();
+        
+        res.send(generateHangupTwiML());
     }
 })
 
@@ -43,6 +73,9 @@ router.post("/recordingStatusCallback", (req, res) => {
     res.end();
 })
 
+
+
+// this is so my frontend application can GET our responses
 router.get("/pollResponses", cors(), (req, res) => {
     res.set("Content-Type", "application/json");
     res.send({
