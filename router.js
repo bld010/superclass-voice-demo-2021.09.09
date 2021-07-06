@@ -1,93 +1,102 @@
 const Router = require('express').Router;
-const { 
-    generateWelcomeCallerTwiML, 
-    generateSuccessfulPollResponseTwiML, 
-    generateLeaveMessageTwiML,
-    generateHangupTwiML 
-} = require('./handler');
 const cors = require('cors');
-
+const VoiceResponse = require('twilio').twiml.VoiceResponse;
 const router = new Router();
 const votes = [];
 
-router.post("/welcome", (req, res) => {
-    // TwiML is just Twilio's special type of XML, so all of the
-    // responses we want to send to Twilio will be in text/xml format
-    res.set("Content-Type", "text/xml");
+const generateWelcomeCallerTwiML = () => {
 
-    // what does a request look like? what is Twilio sending us?
-    console.log('Body of POST request from Twilio: ', req.body)
+    const twiml = new VoiceResponse();
+    const gather = twiml.gather({
+        action: '/pollResponse',
+        numDigits: '1', 
+        method: 'POST',
+    });
 
+    gather.pause();
+
+    gather.say(
+        `Welcome and thank you for calling the Superclass Poll.
+        Today's poll is about an age-old debate at Twilio: cake versus pie.
+        Press 5 if you prefer cake.
+        Press 6 if you prefer pie.`
+    );
+
+    return twiml.toString();
+}
+
+router.post("/welcome", (request, response) => {
+    response.set("Content-Type", "text/xml");
     const welcomeCallerTwiML = generateWelcomeCallerTwiML();
-
-    console.log("welcomeTwiml: ", welcomeCallerTwiML);
-
-
-    res.send(welcomeCallerTwiML);
+    console.log("welcomeCallerTwiML: ", welcomeCallerTwiML)
+    response.send(welcomeCallerTwiML);
 })
 
-router.post("/pollResponse", (req, res) => {
+const generatePollResponseTwiML = (digit) => {
+        
+    const pollChoices = {
+        '5': 'Cake is superior. ',
+        '6': 'Pie is amazing.'
+    }
+    let twiml = new VoiceResponse();
 
-    //what info are we getting here?
-    console.log('request body: ', req.body);
+    if (digit === '5' || digit === '6') {
+        twiml.say('Your vote has been recorded.');
+        twiml.say(`Your choice was ${pollChoices[digit]}`);
+        twiml.say(
+            `If you would like to leave a message about why you chose cake or pie, 
+            Please record your message after the beep. Otherwise, you may hang up.`
+        )
+        twiml.pause();
+        twiml.record({
+            recordingStatusCallback: '/recordingStatus',
+            timeout: 30,
+            transcribe: true,
+        })
+        return twiml.toString();
+    } else {
+        twiml.hangup();
+        return twiml.toString();
+    }
+}
 
-    //I want to keep track of the responses
-    // for simplicity's sake, I'll just be saving 
-    // the interesting information in an array
+router.post("/pollResponse", (request, response) => {
+    response.set("Content-Type", "text/xml");
 
-    // the callSid is useful, since we can look up
-    // the call resource in the Twilio Console
-    // and it can help us debug issues and find resources
-    // associated with that call, like a recording
+    const digit = request.body.Digits;
+    const callSid = request.body.CallSid;
 
-    const digit = req.body.Digits;
-    const callSid = req.body.CallSid;
-    const fromNumber = req.body.From;
-
-    // place the call in my votes array
     votes.push({
         vote: digit,
         callSid,
-        fromNumber,
-        // recordingUrl: null
+        recordingUrl: null
     })
 
-    // we could just end the call there, 
-    // but I want to let a caller know
-    // that their vote was successful.
-    // so I'm going to create a another function
-    // to return some TwiML 
-    // lets call it generateSuccessfulPollResponseTwiML
-    // and import it at the top of this file.
+    const pollResponseTwiML = generatePollResponseTwiML(digit);
 
-    res.send(generateSuccessfulPollResponseTwiML(digit));
+    response.send(pollResponseTwiML);
 })
 
-router.post("/leaveMessage", (req, res) => {
-    const digit = req.body.Digits;
-    if (digit) {
-        res.send(generateLeaveMessageTwiML(digit));
-    } else {
-        
-        res.send(generateHangupTwiML());
-    }
+
+
+router.post("/recordingStatus", (request, response) => {
+    const voteIndex = votes.findIndex(vote => vote.callSid == request.body.CallSid);
+    votes[voteIndex].recordingUrl = `${request.body.RecordingUrl}.mp3`;
+    response.end();
 })
 
-router.post("/recordingStatusCallback", (req, res) => {
-    console.log(req.body.CallSid);
-    console.log('votes: ', votes)
-    const voteIndex = votes.findIndex(vote => vote.callSid == req.body.CallSid);
-    console.log('voteIndex: ', voteIndex)
-    votes[voteIndex].recordingUrl = `${req.body.RecordingUrl}.mp3`;
-    res.end();
-})
+
+
+
+
+
 
 
 
 // this is so my frontend application can GET our responses
-router.get("/pollResponses", cors(), (req, res) => {
-    res.set("Content-Type", "application/json");
-    res.send({
+router.get("/pollResponses", cors(), (request, response) => {
+    response.set("Content-Type", "application/json");
+    response.send({
         votes
     })
 })
