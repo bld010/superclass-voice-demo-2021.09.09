@@ -4,7 +4,18 @@ const VoiceResponse = require('twilio').twiml.VoiceResponse;
 const router = new Router();
 const votes = [];
 
-const generateWelcomeCallerTwiML = () => {
+
+
+
+
+router.post("/welcome", (request, response) => {
+    response.set("Content-Type", "text/xml");
+    const welcomeCallerTwiML = generateWelcomeCallerTwiML();
+    console.log("welcomeCallerTwiML: ", welcomeCallerTwiML)
+    response.send(welcomeCallerTwiML);
+})
+
+function generateWelcomeCallerTwiML() {
 
     const twiml = new VoiceResponse();
     const gather = twiml.gather({
@@ -25,14 +36,37 @@ const generateWelcomeCallerTwiML = () => {
     return twiml.toString();
 }
 
-router.post("/welcome", (request, response) => {
+
+
+
+
+
+
+
+
+
+router.post("/pollResponse", (request, response) => {
     response.set("Content-Type", "text/xml");
-    const welcomeCallerTwiML = generateWelcomeCallerTwiML();
-    console.log("welcomeCallerTwiML: ", welcomeCallerTwiML)
-    response.send(welcomeCallerTwiML);
+    
+    const digit = request.body.Digits;
+    const callSid = request.body.CallSid;
+    
+    saveVote(digit, callSid);
+    
+    const pollResponseTwiML = generatePollResponseTwiML(digit);
+    
+    response.send(pollResponseTwiML);
 })
 
-const generatePollResponseTwiML = (digit) => {
+function saveVote(digit, callSid) {
+    votes.push({
+        vote: digit,
+        callSid,
+        recordingUrl: null
+    })
+}
+
+function generatePollResponseTwiML(digit) {
         
     const pollChoices = {
         '5': 'Cake is superior. ',
@@ -60,22 +94,6 @@ const generatePollResponseTwiML = (digit) => {
     }
 }
 
-router.post("/pollResponse", (request, response) => {
-    response.set("Content-Type", "text/xml");
-
-    const digit = request.body.Digits;
-    const callSid = request.body.CallSid;
-
-    votes.push({
-        vote: digit,
-        callSid,
-        recordingUrl: null
-    })
-
-    const pollResponseTwiML = generatePollResponseTwiML(digit);
-
-    response.send(pollResponseTwiML);
-})
 
 
 
