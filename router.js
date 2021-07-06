@@ -11,9 +11,18 @@ const router = new Router();
 const votes = [];
 
 router.post("/welcome", (req, res) => {
+    // TwiML is just Twilio's special type of XML, so all of the
+    // responses we want to send to Twilio will be in text/xml format
     res.set("Content-Type", "text/xml");
+
+    // what does a request look like? what is Twilio sending us?
+    console.log('Body of POST request from Twilio: ', req.body)
+
     const welcomeCallerTwiML = generateWelcomeCallerTwiML();
+
     console.log("welcomeTwiml: ", welcomeCallerTwiML);
+
+
     res.send(welcomeCallerTwiML);
 })
 

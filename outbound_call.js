@@ -11,7 +11,7 @@ var client = new twilio(accountSid, authToken)
 const makeOutgoingCall = async () => {
     let call = await client.calls.create({
         twiml: '<Response><Say>Ahoy, World!</Say></Response>',
-        to: '+17204601666‬',
+        to: '+15555555555',
         from: myCallerId
       })
     console.log('call: ', call)
