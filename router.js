@@ -86,6 +86,7 @@ function generatePollResponseTwiML(digit) {
             recordingStatusCallback: '/recordingStatus',
             timeout: 30,
             transcribe: true,
+            transcribeCallback: '/transcribe'
         })
         return twiml.toString();
     } else {
@@ -95,7 +96,10 @@ function generatePollResponseTwiML(digit) {
 }
 
 
-
+router.post("/transcribe", (request, response) => {
+    console.log('transcribe: ', request.body);
+    response.end();
+})
 
 router.post("/recordingStatus", (request, response) => {
     const voteIndex = votes.findIndex(vote => vote.callSid == request.body.CallSid);
