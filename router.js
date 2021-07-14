@@ -30,27 +30,27 @@ function generatePollResponseTwiML(vote) {
 
 
 
-// router.post("/transcribe", (request, response) => {
+router.post("/transcribe", (request, response) => {
 
-//     const transcriptionText = request.body.TranscriptionText;
-//     console.log("\n\n\n ---------------------------------------------");
-//     console.log("\n\n\n   transcriptionText", transcriptionText);
-//     console.log("\n\n\n ---------------------------------------------");
+    const transcriptionText = request.body.TranscriptionText;
+    console.log("\n\n\n ---------------------------------------------");
+    console.log("\n\n\n   transcriptionText", transcriptionText);
+    console.log("\n\n\n ---------------------------------------------");
 
-//     response.end();
-// })
+    response.end();
+})
     
-// router.post("/recordingStatus", (request, response) => {
-//     const recordingStatusRequestBody = request.body;
-//     console.log("\n\n\n ---------------------------------------------------------------");
-//     console.log("\n\n\n   recordingStatusRequestBody", recordingStatusRequestBody);
-//     console.log("\n\n\n ---------------------------------------------------------------");
+router.post("/recordingStatus", (request, response) => {
+    const recordingStatusRequestBody = request.body;
+    console.log("\n\n\n ---------------------------------------------------------------");
+    console.log("\n\n\n   recordingStatusRequestBody", recordingStatusRequestBody);
+    console.log("\n\n\n ---------------------------------------------------------------");
     
-//     saveRecordingUrl(request.body);
+    saveRecordingUrl(request.body);
     
 
-//     response.end();
-// })
+    response.end();
+})
     
     
     
