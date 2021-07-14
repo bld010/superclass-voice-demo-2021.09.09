@@ -1,10 +1,8 @@
 const Router = require('express').Router;
 const router = new Router();
-const cors = require('cors');
 
 const VoiceResponse = require('twilio').twiml.VoiceResponse;
 
-const votes = [];
 
 router.post("/welcome", (request, response) => {
     response.type("xml");
@@ -47,30 +45,21 @@ router.post("/pollResponse", (request, response) => {
     
     saveVote(vote, callSid);
    
-    const pollResponseTwiML = generatePollResponseTwiML(Digits);
+    const pollResponseTwiML = generatePollResponseTwiML(vote);
     
     response.send(pollResponseTwiML);
 })
 
-function saveVote(vote, callSid) {
-    votes.push({
-        vote,
-        callSid,
-        recordingUrl: null
-    })
-}
 
-function generatePollResponseTwiML(digit) {
-        
-    const pollChoices = {
-        '5': 'Cake is superior. ',
-        '6': 'Pie is amazing.'
-    }
+
+function generatePollResponseTwiML(vote) {
+            
     let twiml = new VoiceResponse();
-
+    
     if (digit === '5' || digit === '6') {
+        const pollChoice = vote === '5' ? 'Cake is superior.' : 'Pie is amazing.'
         twiml.say(
-            `Your vote has been recorded. Your choice was ${pollChoices[digit]}
+            `Your vote has been recorded. Your choice was ${pollChoice}
             If you would like to leave a message about why you chose cake or pie, 
             Please record your message after the beep. Otherwise, you may hang up.`
         );
@@ -88,16 +77,43 @@ function generatePollResponseTwiML(digit) {
     return twiml.toString();
 }
 
-// router.post("/transcribe", (request, response) => {
-//     console.log('transcribe: ', request.body);
-//     response.end();
-// })
+router.post("/transcribe", (request, response) => {
+    const transcriptionText = request.body.TranscriptionText;
+    console.log("\n\n\n ---------------------------------------------");
+    console.log("\n\n\n   transcriptionText", transcriptionText);
+    console.log("\n\n\n ---------------------------------------------");
+
+    response.end();
+})
 
 router.post("/recordingStatus", (request, response) => {
+
+    const recordingStatusBody = request.body;
+    console.log("\n\n\n -------------------------------------------------");
+    console.log("\n\n\n   recordingStatusBody", recordingStatusBody);
+    console.log("\n\n\n -------------------------------------------------");
     saveRecordingUrl(request.Body);
 
     response.end();
 })
+
+
+
+
+
+
+
+const votes = [];
+
+function saveVote(vote, callSid) {
+    if (vote === "5" || vote === "6") {
+        votes.push({
+            vote,
+            callSid,
+            recordingUrl: null
+        })
+    }
+}
 
 function saveRecordingUrl(requestBody) {
     const voteIndex = votes.findIndex(vote => vote.callSid == requestBody.CallSid);
@@ -116,8 +132,8 @@ function saveRecordingUrl(requestBody) {
 
 
 
-
 // this is so my frontend application can GET our responses
+const cors = require('cors');
 router.get("/pollResponses", cors(), (request, response) => {
     response.set("Content-Type", "application/json");
     response.send({
