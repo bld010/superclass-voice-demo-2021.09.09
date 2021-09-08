@@ -14,8 +14,8 @@ If you'd like to try out this repo on your own, there are some prerequisites:
 
 # Set Up
 
-1. Clone this repo using the following command in your terminal: `git clone https://github.com/bld010/superclass-voice-demo-2021.07.15.git`
-1. In your terminal, change into the repo's directory using the following command: `cd superclass-voice-demo-20201.07.05`
+1. Clone this repo using the following command in your terminal: `git clone https://github.com/bld010/superclass-voice-demo-2021.09.09.git`
+1. In your terminal, change into the repo's directory using the following command: `cd superclass-voice-demo-20201.09.09`
 1. Run `npm install` to install the dependencies
 1. Run `nodemon server.js` to run your server locally.
 1. In a new terminal window, run `http ngrok 3000`. Take note of the `https` url shown. 
